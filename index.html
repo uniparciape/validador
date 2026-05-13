@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Verificador de Planos – UNIPAR Cianorte</title>
+<title>Verificador de Planos – UNIPAR</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -127,7 +127,7 @@ footer a:hover{color:var(--red)}
 <header>
   <div style="font-size:24px;line-height:1">🎓</div>
   <div class="logo">
-    <strong>UNIPAR Cianorte</strong>
+    <strong>UNIPAR</strong>
     <span>Verificador de Planos de Ensino</span>
   </div>
   <div class="badge" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
@@ -168,7 +168,7 @@ footer a:hover{color:var(--red)}
 
 <footer>
   <div style="margin-bottom:6px">
-    UNIPAR Cianorte &nbsp;·&nbsp;
+    UNIPAR &nbsp;·&nbsp;
     <a href="#" onclick="window.print();return false" style="color:inherit">🖨️ Imprimir relatório</a>
   </div>
   <div style="margin-bottom:8px;font-size:11px;color:var(--g500)">
@@ -176,11 +176,11 @@ footer a:hover{color:var(--red)}
     &nbsp;e&nbsp; <b>Instruções para Elaboração e Preenchimento do Plano de Ensino – 2026</b> (Diretoria de Educação – UNIPAR, dez/2025).
   </div>
   <div style="margin-bottom:10px;padding:8px 16px;background:#fff8f0;border:1px solid #f5d0a0;border-radius:6px;font-size:11px;color:#7a4a00;display:inline-block;text-align:left;max-width:700px">
-    ⚠️ <b>Nota — Prova Integrada:</b> A Resolução CONSEPE 05/2025 prevê peso fixo de 50% no bimestre.
-    A IN Diretoria de Educação 2026 adota pesos de <b>20 a 30%</b> (semestral) e <b>30 a 50%</b> (anual).
-    Este verificador aceita ambos os critérios no item 5.4.
+    ⚠️ <b>Nota — Prova Integrada:</b> Adotado o critério da IN Diretoria de Educação 2026:
+    peso de <b>20 a 30%</b> no bimestre (disciplinas semestrais) e <b>30 a 50%</b> (disciplinas anuais).
+    
   </div>
-  <div style="margin-top:10px;font-size:10px;color:#b0b0b0;letter-spacing:.3px">
+  <div style="margin-top:10px;font-size:13px;color:#b0b0b0;letter-spacing:.3px">
     Desenvolvido por Prof. Bruno Oliveira
   </div>
 </footer>
@@ -293,8 +293,7 @@ const CHECKLIST=[
     "m[eé]dia\\s+aritm[eé]tica"],"Art. 5.º §1.º / §2.º / Art. 21.º",true],
   ["5.4","AVALIAÇÃO DA APRENDIZAGEM","Prova Integrada mencionada no bimestre N2 e/ou N4",
    ["prova\\s+integrada","\\bPI\\b","integrada.{0,30}bimest",
-    "[23][0-9]\\s*%.{0,20}bimest","bimest.{0,20}[23][0-9]\\s*%",
-    "50%.{0,30}bimest","bimest.{0,30}50%"],"Art. 5.º §1.º b / §2.º b · IN Diretoria Ed. 2026",true],
+    "[23][0-9]\\s*%.{0,20}bimest","bimest.{0,20}[23][0-9]\\s*%"],"IN Diretoria Ed. 2026 · Art. 5.º §1.º b / §2.º b",true],
   ["5.5","AVALIAÇÃO DA APRENDIZAGEM","Escala de notas 0,0 a 10,0 sem arredondamento",
    ["0[,.]0.{0,15}(a|até).{0,8}10","sem\\s+arredondamento",
     "primeira\\s+casa\\s+decimal"],"Art. 5.º §6.º / Art. 21.º §3.º",true],
@@ -439,7 +438,7 @@ function render(planos){
   let html=`<div class="relatorio">
     <h2>📋 Relatório Final Consolidado</h2>
     <div class="sub">
-      Gerado em ${now} &nbsp;·&nbsp; UNIPAR Cianorte<br>
+      Gerado em ${now} &nbsp;·&nbsp; UNIPAR<br>
       <span style="font-size:11px">
         Baseado em: <b>Resolução CONSEPE n.º 05/2025</b> (26/11/2025) &nbsp;e&nbsp;
         <b>Instruções para Elaboração e Preenchimento do Plano de Ensino – 2026</b>
@@ -470,8 +469,8 @@ function render(planos){
       &nbsp;&nbsp;② <b>Instruções para Elaboração e Preenchimento do Plano de Ensino – 2026</b> – Diretoria de Educação, UNIPAR (dez/2025).<br>
       Os itens obrigatórios derivam principalmente dos arts. 3.º, 5.º, 12.º e 21.º da CONSEPE 05/2025 e das seções de Identificação, Critério de Avaliação, Metodologia e Bibliografia da IN 2026.<br>
       <span style="color:var(--orange)">⚠️ <b>Atenção — Prova Integrada [5.4]:</b></span>
-      A CONSEPE 05/2025 prevê peso fixo de 50% no bimestre. A IN 2026 adota
-      <b>20–30%</b> (semestral) e <b>30–50%</b> (anual). Este verificador aceita ambos os critérios.
+      Adotado o critério da IN Diretoria de Educação 2026: peso de
+      <b>20 a 30%</b> no bimestre (semestral) e <b>30 a 50%</b> (anual).
     </div>
   </div>`;
 
