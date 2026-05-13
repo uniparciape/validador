@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verificador de Planos – UNIPAR Cianorte</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#C8102E;--red-d:#9e0d24;--red-bg:#fdf0f2;
+  --green:#1a6e35;--green-bg:#eaf5ed;
+  --orange:#b85c00;--orange-bg:#fff4e6;
+  --g900:#1a1a1a;--g700:#3d3d3d;--g500:#6b6b6b;--g300:#b0b0b0;
+  --g200:#e8e8e8;--g100:#f5f5f5;--white:#fff;
+  --r:6px;--sh:0 2px 12px rgba(0,0,0,.08);
+}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--g100);color:var(--g900);min-height:100vh}
+header{background:var(--red);color:#fff;padding:16px 32px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(200,16,46,.35);position:sticky;top:0;z-index:100}
+.logo strong{font-size:16px;font-weight:700;display:block}
+.logo span{font-size:11px;opacity:.8;text-transform:uppercase;letter-spacing:.5px}
+.badge{margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;flex-shrink:0}
+main{max-width:960px;margin:0 auto;padding:28px 20px}
+
+/* UPLOAD */
+.upload-area{background:var(--white);border:2px dashed var(--g200);border-radius:10px;padding:40px 28px;text-align:center;cursor:pointer;transition:.2s;position:relative;margin-bottom:16px}
+.upload-area:hover,.upload-area.drag-over{border-color:var(--red);background:var(--red-bg)}
+.upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-area .icon{font-size:36px;margin-bottom:10px}
+.upload-area h2{font-size:17px;font-weight:600;margin-bottom:5px}
+.upload-area p{font-size:13px;color:var(--g500)}
+.ext-badge{display:inline-block;margin-top:10px;background:var(--g100);padding:3px 10px;border-radius:20px;font-size:11px;color:var(--g500)}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.btn-pasta{padding:13px;background:var(--white);color:var(--red);border:2px solid var(--red);border-radius:var(--r);font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:7px;position:relative}
+.btn-pasta:hover{background:var(--red-bg)}
+.btn-pasta input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+#btn-ok{padding:13px;background:var(--red);color:#fff;border:none;border-radius:var(--r);font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:7px}
+#btn-ok:hover{background:var(--red-d)}
+#btn-ok:disabled{background:var(--g200);color:var(--g300);cursor:not-allowed}
+#file-list{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.ftag{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);padding:5px 10px;font-size:12px;font-family:'IBM Plex Mono',monospace;display:flex;align-items:center;gap:5px;color:var(--g700)}
+.ftag button{background:none;border:none;cursor:pointer;color:var(--g300);font-size:13px;line-height:1;padding:0}
+.ftag button:hover{color:var(--red)}
+#btn-limpar{background:none;border:none;color:var(--g500);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:4px}
+#btn-limpar:hover{color:var(--red)}
+
+/* LOADING */
+#loading{display:none;text-align:center;padding:36px;color:var(--g500);font-size:13px}
+.spinner{width:28px;height:28px;border:3px solid var(--g200);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#progress{font-size:12px;color:var(--g500);margin-top:6px}
+
+/* RELATÓRIO FINAL */
+.relatorio{background:var(--white);border-radius:10px;padding:22px 24px;margin-bottom:20px;box-shadow:var(--sh)}
+.relatorio h2{font-size:15px;font-weight:700;color:var(--g900);margin-bottom:3px}
+.relatorio .sub{font-size:12px;color:var(--g500);margin-bottom:16px}
+.rel-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.rel-stat{text-align:center;padding:12px 6px;border-radius:8px;background:var(--g100)}
+.rel-stat .n{font-size:26px;font-weight:700;line-height:1}
+.rel-stat .l{font-size:10px;color:var(--g500);margin-top:3px;text-transform:uppercase;letter-spacing:.4px}
+.rs-t .n{color:var(--g700)}.rs-c .n{color:var(--green)}.rs-p .n{color:var(--orange)}.rs-n .n{color:var(--red)}
+.rel-table{width:100%;border-collapse:collapse;font-size:13px}
+.rel-table th{background:var(--red);color:#fff;padding:8px 11px;text-align:left;font-weight:600;font-size:11px;letter-spacing:.4px;text-transform:uppercase}
+.rel-table td{padding:9px 11px;border-bottom:1px solid var(--g200);vertical-align:middle}
+.rel-table tr:last-child td{border-bottom:none}
+.rel-table tr:nth-child(even) td{background:var(--g100)}
+.rt-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.rt-c{background:var(--green-bg);color:var(--green)}.rt-p{background:var(--orange-bg);color:var(--orange)}.rt-n{background:var(--red-bg);color:var(--red)}
+.bar-wrap{width:70px;background:var(--g200);border-radius:10px;height:6px;display:inline-block;vertical-align:middle;margin-right:5px}
+.bar{height:6px;border-radius:10px}
+.bc{background:var(--green)}.bp{background:var(--orange)}.bn{background:var(--red)}
+.rel-note{font-size:11px;color:var(--g500);margin-top:12px;padding-top:12px;border-top:1px solid var(--g200)}
+
+/* CARDS */
+.card{background:var(--white);border-radius:10px;margin-bottom:14px;box-shadow:var(--sh);overflow:hidden}
+.card-head{padding:14px 18px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:.15s;border-bottom:1px solid transparent}
+.card-head:hover{background:var(--g100)}
+.card.open .card-head{border-bottom-color:var(--g200)}
+.pct-ring{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:3px solid}
+.rc{border-color:var(--green);color:var(--green)}.rp{border-color:var(--orange);color:var(--orange)}.rn{border-color:var(--red);color:var(--red)}
+.card-info{flex:1;min-width:0}
+.card-info .fn{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-info .mt{font-size:12px;color:var(--g500);margin-top:2px}
+.nbadge{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.nb-c{background:var(--green-bg);color:var(--green)}.nb-p{background:var(--orange-bg);color:var(--orange)}.nb-n{background:var(--red-bg);color:var(--red)}
+.chev{font-size:18px;color:var(--g300);transition:.2s;flex-shrink:0;line-height:1}
+.card.open .chev{transform:rotate(180deg)}
+.card-body{display:none;padding:0 18px 20px}
+.card.open .card-body{display:block}
+.mgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin:12px 0 4px}
+.mi{background:var(--g100);border-radius:var(--r);padding:8px 11px}
+.mi .mk{font-size:10px;color:var(--g500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.mi .mv{font-size:13px;font-weight:500}
+.grupo-hd{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--g500);margin:16px 0 7px;padding-bottom:5px;border-bottom:1px solid var(--g200)}
+.item{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:var(--r);margin-bottom:3px;font-size:13px}
+.item.ok{background:var(--green-bg)}.item.wn{background:var(--orange-bg)}.item.er{background:var(--red-bg)}
+.item-ico{font-size:13px;flex-shrink:0;margin-top:1px}
+.item-c{flex:1;min-width:0}
+.item-d{font-weight:500}
+.item-d.ok{color:var(--green)}.item-d.wn{color:var(--orange)}.item-d.er{color:var(--red)}
+.item-ref{font-size:11px;color:var(--g500);margin-top:1px}
+.item-ev{font-size:11px;margin-top:3px;font-family:'IBM Plex Mono',monospace;background:rgba(0,0,0,.05);padding:3px 7px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--g700)}
+.itag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;flex-shrink:0;align-self:center;text-transform:uppercase}
+.itag-o{background:#ffd6dc;color:var(--red)}.itag-r{background:#ffe8c8;color:var(--orange)}
+.pend-box{margin-top:12px;border:1px solid #ffd6dc;border-radius:var(--r);overflow:hidden}
+.pend-box .pt{background:var(--red-bg);padding:8px 13px;font-size:12px;font-weight:600;color:var(--red)}
+.pend-box ul{padding:9px 13px 11px 27px}
+.pend-box li{font-size:13px;color:var(--g700);margin-bottom:4px}
+.pend-box li span{font-size:11px;color:var(--g500);margin-left:3px}
+
+footer{text-align:center;padding:18px;font-size:11px;color:var(--g500);border-top:1px solid var(--g200);margin-top:24px}
+footer a{color:var(--g500);text-decoration:none}
+footer a:hover{color:var(--red)}
+@media(max-width:620px){.rel-stats,.mgrid{grid-template-columns:1fr 1fr}.btn-grid{grid-template-columns:1fr}header{padding:12px 14px}main{padding:16px 12px}.badge{display:none}}
+@media print{
+  header .badge,.btn-grid,#file-list,#btn-limpar,.upload-area,#loading{display:none!important}
+  .card-body{display:block!important}
+  .relatorio{box-shadow:none;border:1px solid #ccc}
+  .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-size:24px;line-height:1">🎓</div>
+  <div class="logo">
+    <strong>UNIPAR Cianorte</strong>
+    <span>Verificador de Planos de Ensino</span>
+  </div>
+  <div class="badge">CONSEPE n.º 05/2025</div>
+</header>
+
+<main>
+  <!-- ÁREA DE UPLOAD -->
+  <div class="upload-area" id="drop">
+    <input type="file" id="fi" multiple accept=".docx">
+    <div class="icon">📂</div>
+    <h2>Selecionar arquivos Word</h2>
+    <p>Clique aqui ou arraste os arquivos .docx dos planos de ensino</p>
+    <span class="ext-badge">Aceita arquivos .docx · Nenhuma instalação necessária</span>
+  </div>
+
+  <div class="btn-grid">
+    <label class="btn-pasta">
+      📁 Selecionar Pasta Inteira
+      <input type="file" id="fi-pasta" webkitdirectory accept=".docx">
+    </label>
+    <button id="btn-ok" disabled onclick="verificar()">🔍 Verificar Planos</button>
+  </div>
+
+  <div id="file-list"></div>
+  <button id="btn-limpar" style="display:none" onclick="limpar()">✕ Limpar seleção</button>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <span id="prog-msg">Lendo arquivos...</span>
+    <div id="progress"></div>
+  </div>
+
+  <div id="results"></div>
+</main>
+
+<footer>
+  UNIPAR Cianorte &nbsp;·&nbsp; Resolução CONSEPE n.º 05/2025 &nbsp;·&nbsp;
+  Funciona direto no navegador, sem instalação &nbsp;·&nbsp;
+  <a href="#" onclick="window.print();return false">🖨️ Imprimir relatório</a>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   UTILITÁRIOS
+═══════════════════════════════════════════════════ */
+function norm(t){
+  return t.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+}
+function acha(texto,...pats){
+  const n=norm(texto);
+  for(const p of pats){
+    try{ if(new RegExp(norm(p)).test(n)) return true; }
+    catch(e){ if(n.includes(norm(p))) return true; }
+  }
+  return false;
+}
+function trecho(texto,...pats){
+  const n=norm(texto);
+  for(const p of pats){
+    try{
+      const m=new RegExp(norm(p)).exec(n);
+      if(m){
+        const i=Math.max(0,m.index-25);
+        const f=Math.min(texto.length,m.index+m[0].length+110);
+        return texto.slice(i,f).trim().replace(/\n/g,' ');
+      }
+    }catch(e){}
+  }
+  return '';
+}
+function campo(texto,...pats){
+  const n=norm(texto);
+  for(const p of pats){
+    try{
+      const m=new RegExp(norm(p)).exec(n);
+      if(m && m[1]!==undefined){
+        const s=m.index+m[0].indexOf(m[1]);
+        return texto.slice(s,s+55).split('\n')[0].trim();
+      }
+    }catch(e){}
+  }
+  return 'Não identificado';
+}
+
+/* ═══════════════════════════════════════════════════
+   EXTRAÇÃO DE TEXTO DO DOCX (via JSZip)
+═══════════════════════════════════════════════════ */
+async function extrairTexto(file){
+  const buf   = await file.arrayBuffer();
+  const zip   = await JSZip.loadAsync(buf);
+  const xmlF  = zip.file('word/document.xml');
+  if(!xmlF) return '';
+  const xml   = await xmlF.async('string');
+  // Remove tags XML e decodifica entidades
+  const texto = xml
+    .replace(/<\/w:p>/gi,'\n')
+    .replace(/<[^>]+>/g,' ')
+    .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&')
+    .replace(/&apos;/g,"'").replace(/&quot;/g,'"')
+    .replace(/ {2,}/g,' ')
+    .trim();
+  return texto;
+}
+
+/* ═══════════════════════════════════════════════════
+   CHECKLIST – CONSEPE 05/2025
+   [codigo, grupo, descricao, padroes[], artigo, obrigatorio]
+═══════════════════════════════════════════════════ */
+const CHECKLIST=[
+  ["1.1","IDENTIFICAÇÃO","Nome do curso",
+   ["curso[\\s:]+\\w","graduação\\s+em\\s+\\w"],"Art. 3.º",true],
+  ["1.2","IDENTIFICAÇÃO","Nome da disciplina / componente curricular",
+   ["disciplina[\\s:]+\\w","componente\\s+curricular[\\s:]+\\w"],"Art. 3.º",true],
+  ["1.3","IDENTIFICAÇÃO","Período / semestre letivo",
+   ["per[íi]odo[\\s:]*\\d","\\d+[°º]\\s*per[íi]odo","semestre[\\s:]*\\d"],"Art. 3.º",true],
+  ["1.4","IDENTIFICAÇÃO","Nome do professor responsável",
+   ["professor[a]?[\\s:]+\\w","docente[\\s:]+\\w","ministrante[\\s:]+\\w"],"Art. 3.º",true],
+  ["1.5","IDENTIFICAÇÃO","Carga horária da disciplina",
+   ["carga\\s*hor[áa]ria","\\d+\\s*h/a","\\d+\\s*horas[\\s-]aula"],"Art. 3.º",false],
+  ["2.1","CONTEÚDO PROGRAMÁTICO","Ementa da disciplina",
+   ["\\bementa\\b","síntese\\s+da\\s+disciplina"],"Art. 3.º",true],
+  ["2.2","CONTEÚDO PROGRAMÁTICO","Conteúdo programático / unidades temáticas",
+   ["conte[úu]do\\s+program[áa]tico","unidade[s]?\\s+(did[áa]tica|tem[áa]tica)",
+    "conte[úu]dos?\\s+(a\\s+)?ser\\s+desenvolvid"],"Art. 3.º / Art. 9.º",true],
+  ["2.3","CONTEÚDO PROGRAMÁTICO","Cronograma / distribuição dos conteúdos por bimestre",
+   ["cronograma","1[°º\\.?]\\s*bimest","distribui[çc][ãa]o.{0,20}conte[úu]do",
+    "calend[áa]rio\\s+de\\s+aulas"],"Art. 3.º / Art. 2.º §3.º",true],
+  ["3.1","OBJETIVOS E COMPETÊNCIAS","Objetivos de aprendizagem declarados",
+   ["objetivo[s]?\\s+(geral|espec[íi]fico|de\\s+aprendizagem)","\\bobjetivos\\b",
+    "ao\\s+final.{0,30}aluno.{0,30}(ser[áa]|capaz)"],"Art. 1.º §4.º / Art. 8.º",true],
+  ["3.2","OBJETIVOS E COMPETÊNCIAS","Competências e/ou habilidades a desenvolver",
+   ["compet[êe]ncia[s]?","habilidade[s]?","perfil\\s+do\\s+egresso"],"Art. 1.º §4.º",false],
+  ["4.1","METODOLOGIA","Metodologia de ensino descrita",
+   ["metodologia","m[eé]todo[s]?\\s+de\\s+ensino",
+    "estrat[eé]gia[s]?\\s+(did[áa]tica|pedag[oó]gica)"],"Art. 1.º §4.º / Art. 7.º",true],
+  ["4.2","METODOLOGIA","Recursos didáticos / tecnologias de apoio",
+   ["recurso[s]?\\s+did[áa]tico","\\bTIC\\b","ambiente\\s+virtual",
+    "plataforma\\s+digital"],"Art. 1.º §4.º",false],
+  ["5.1","AVALIAÇÃO DA APRENDIZAGEM","Critérios / instrumentos de avaliação descritos",
+   ["crit[eé]rio[s]?\\s+de\\s+avalia","instrumento[s]?\\s+de\\s+avalia",
+    "forma[s]?\\s+de\\s+avalia"],"Art. 2.º / Art. 3.º / Art. 7.º",true],
+  ["5.2","AVALIAÇÃO DA APRENDIZAGEM","Regime de avaliação bimestral (N1/N2 ou N1–N4)",
+   ["\\bN[1-4]\\b","nota[s]?\\s+bimestral","bimest","\\bBIM\\s*[1-4]\\b"],"Art. 4.º / Art. 5.º",true],
+  ["5.3","AVALIAÇÃO DA APRENDIZAGEM","Composição / fórmula da média final",
+   ["m[eé]dia\\s+final","m[eé]dia\\s*=","\\(N1\\s*\\+\\s*N2",
+    "m[eé]dia\\s+aritm[eé]tica"],"Art. 5.º §1.º / §2.º / Art. 21.º",true],
+  ["5.4","AVALIAÇÃO DA APRENDIZAGEM","Prova Integrada (50% do bimestre N2 e/ou N4)",
+   ["prova\\s+integrada","50%.{0,30}bimest","bimest.{0,30}50%"],"Art. 5.º §1.º b / §2.º b",true],
+  ["5.5","AVALIAÇÃO DA APRENDIZAGEM","Escala de notas 0,0 a 10,0 sem arredondamento",
+   ["0[,.]0.{0,15}(a|até).{0,8}10","sem\\s+arredondamento",
+    "primeira\\s+casa\\s+decimal"],"Art. 5.º §6.º / Art. 21.º §3.º",true],
+  ["5.6","AVALIAÇÃO DA APRENDIZAGEM","Avaliação Somativa prevista (provas formais)",
+   ["avalia[çc][ãa]o\\s+somativa","\\bprova[s]?\\b","\\bexame[s]?\\b"],"Art. 1.º §3.º a",true],
+  ["5.7","AVALIAÇÃO DA APRENDIZAGEM","Avaliação Formativa (trabalhos, projetos, seminários)",
+   ["avalia[çc][ãa]o\\s+formativa","\\bportf[oó]lio\\b","\\bsemin[áa]rio[s]?\\b",
+    "\\bprojeto[s]?\\b","atividade[s]?\\s+formativa","\\bparticipa[çc][ãa]o\\b"],"Art. 1.º §3.º b",false],
+  ["6.1","FREQUÊNCIA","Frequência mínima obrigatória (75%) declarada",
+   ["frequ[êe]ncia\\s+m[íi]nima","75\\s*%","25.{0,15}(falta|aus[êe]ncia)"],"Art. 12.º §1.º",true],
+  ["7.1","APROVAÇÃO E RESULTADO FINAL","Critério de aprovação — média ≥ 6,0",
+   ["aprov.{0,30}6[,.]0","m[eé]dia\\s+(m[íi]nima\\s+)?para\\s+aprov",
+    "m[íi]nimo\\s+de\\s+6"],"Art. 21.º",true],
+  ["7.2","APROVAÇÃO E RESULTADO FINAL","Prova Substitutiva prevista",
+   ["(prova\\s+)?substitutiva","segunda\\s+chamada"],"Art. 13.º / Art. 18.º",true],
+  ["8.1","REFERÊNCIAS BIBLIOGRÁFICAS","Referências bibliográficas básicas",
+   ["refer[êe]ncia[s]?\\s+(bibliogr[áa]fica[s]?\\s+)?b[áa]sica",
+    "bibliografia\\s+b[áa]sica"],"Art. 3.º",true],
+  ["8.2","REFERÊNCIAS BIBLIOGRÁFICAS","Referências bibliográficas complementares",
+   ["refer[êe]ncia[s]?\\s+(bibliogr[áa]fica[s]?\\s+)?complement",
+    "bibliografia\\s+complement"],"Art. 3.º",false],
+];
+
+function processarTexto(nome, texto){
+  const meta={
+    curso:   campo(texto,"curso[\\s:]+(.{3,60})","graduação\\s+em\\s+(.{3,50})"),
+    disciplina:campo(texto,"disciplina[\\s:]+(.{3,60})","componente\\s+curricular[\\s:]+(.{3,60})"),
+    periodo: campo(texto,"(\\d+[°º]?\\s*per[íi]odo)","per[íi]odo[\\s:]+(.{2,20})"),
+    professor:campo(texto,"professor[a]?[\\s:]+(.{3,60})","docente[\\s:]+(.{3,60})"),
+  };
+  const itens=CHECKLIST.map(([codigo,grupo,desc,pats,artigo,obrig])=>{
+    const ok=acha(texto,...pats);
+    return{codigo,grupo,descricao:desc,artigo,obrigatorio:obrig,ok,
+           evidencia:ok?trecho(texto,...pats).slice(0,110):''};
+  });
+  const total=itens.length, okT=itens.filter(i=>i.ok).length;
+  const ob=itens.filter(i=>i.obrigatorio), okO=ob.filter(i=>i.ok).length;
+  const pct=Math.round(okT/total*100), pctO=Math.round(okO/ob.length*100);
+  const nivel=pctO>=100&&pct>=90?'conforme':(pctO>=80?'parcial':'nao_conforme');
+  return{arquivo:nome,meta,itens,pct,pct_ob:pctO,nivel,ok_total:okT,total,ok_obrig:okO,total_obrig:ob.length};
+}
+
+/* ═══════════════════════════════════════════════════
+   CONTROLE DE ARQUIVOS
+═══════════════════════════════════════════════════ */
+let files=[];
+const fi=document.getElementById('fi');
+const fiP=document.getElementById('fi-pasta');
+const fl=document.getElementById('file-list');
+const btn=document.getElementById('btn-ok');
+const drop=document.getElementById('drop');
+const btnL=document.getElementById('btn-limpar');
+
+function refresh(){
+  if(!files.length){fl.innerHTML='';btnL.style.display='none';btn.disabled=true;return;}
+  fl.innerHTML=files.map((f,i)=>
+    `<div class="ftag">📄 ${f.name}<button onclick="rm(${i})">✕</button></div>`
+  ).join('');
+  btnL.style.display='inline';
+  btn.disabled=false;
+}
+function rm(i){files.splice(i,1);refresh();}
+function limpar(){files=[];refresh();document.getElementById('results').innerHTML='';}
+function addFiles(list){
+  Array.from(list)
+    .filter(f=>f.name.toLowerCase().endsWith('.docx')&&!f.name.startsWith('~$'))
+    .forEach(f=>{if(!files.find(x=>x.name===f.name))files.push(f);});
+  refresh();
+}
+fi.onchange=e=>{addFiles(e.target.files);fi.value='';};
+fiP.onchange=e=>{addFiles(e.target.files);fiP.value='';};
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag-over');});
+drop.addEventListener('dragleave',()=>drop.classList.remove('drag-over'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag-over');addFiles(e.dataTransfer.files);});
+
+/* ═══════════════════════════════════════════════════
+   VERIFICAÇÃO
+═══════════════════════════════════════════════════ */
+async function verificar(){
+  if(!files.length)return;
+  btn.disabled=true;
+  const loadEl=document.getElementById('loading');
+  const progEl=document.getElementById('progress');
+  const msgEl=document.getElementById('prog-msg');
+  loadEl.style.display='block';
+  document.getElementById('results').innerHTML='';
+
+  const resultados=[];
+  for(let i=0;i<files.length;i++){
+    msgEl.textContent=`Analisando ${i+1} de ${files.length}...`;
+    progEl.textContent=files[i].name;
+    try{
+      const texto=await extrairTexto(files[i]);
+      resultados.push(processarTexto(files[i].name,texto));
+    }catch(e){
+      resultados.push({arquivo:files[i].name,meta:{curso:'—',disciplina:'—',periodo:'—',professor:'—'},
+        itens:[],pct:0,pct_ob:0,nivel:'nao_conforme',ok_total:0,total:0,ok_obrig:0,total_obrig:0,erro:String(e)});
+    }
+  }
+
+  loadEl.style.display='none';
+  btn.disabled=false;
+  render(resultados);
+}
+
+/* ═══════════════════════════════════════════════════
+   RENDERIZAÇÃO
+═══════════════════════════════════════════════════ */
+const NL={conforme:'✅ Conforme',parcial:'⚠️ Parcial',nao_conforme:'❌ Não Conforme'};
+const NC={conforme:'nb-c',parcial:'nb-p',nao_conforme:'nb-n'};
+const RC={conforme:'rc',parcial:'rp',nao_conforme:'rn'};
+const BC={conforme:'bc',parcial:'bp',nao_conforme:'bn'};
+const RT={conforme:'rt-c',parcial:'rt-p',nao_conforme:'rt-n'};
+const dv=v=>(!v||v==='Não identificado')?'—':v;
+
+function render(planos){
+  const el=document.getElementById('results');
+  const conf=planos.filter(p=>p.nivel==='conforme').length;
+  const parc=planos.filter(p=>p.nivel==='parcial').length;
+  const nc=planos.filter(p=>p.nivel==='nao_conforme').length;
+  const now=new Date().toLocaleString('pt-BR');
+  const mediaG=planos.length?Math.round(planos.reduce((s,p)=>s+p.pct_ob,0)/planos.length):0;
+
+  /* ── TABELA CONSOLIDADA ── */
+  const tRows=planos.slice().sort((a,b)=>a.pct_ob-b.pct_ob).map(p=>{
+    const pendN=p.itens.filter(i=>!i.ok&&i.obrigatorio).length;
+    const pStr=pendN
+      ?`<span style="color:var(--red);font-weight:600">${pendN} pendência${pendN>1?'s':''}</span>`
+      :`<span style="color:var(--green)">Nenhuma</span>`;
+    return`<tr>
+      <td><b>${dv(p.meta.disciplina)}</b><br><span style="font-size:11px;color:var(--g500)">${dv(p.meta.curso)}</span></td>
+      <td>${dv(p.meta.professor)}</td>
+      <td style="text-align:center;white-space:nowrap">
+        <div class="bar-wrap"><div class="bar ${BC[p.nivel]}" style="width:${p.pct_ob}%"></div></div>
+        <b>${p.pct_ob}%</b>
+      </td>
+      <td style="text-align:center">${pStr}</td>
+      <td style="text-align:center"><span class="rt-badge ${RT[p.nivel]}">${NL[p.nivel]}</span></td>
+    </tr>`;
+  }).join('');
+
+  let html=`<div class="relatorio">
+    <h2>📋 Relatório Final Consolidado</h2>
+    <div class="sub">Gerado em ${now} &nbsp;·&nbsp; UNIPAR Cianorte &nbsp;·&nbsp; Resolução CONSEPE n.º 05/2025</div>
+    <div class="rel-stats">
+      <div class="rel-stat rs-t"><div class="n">${planos.length}</div><div class="l">Analisados</div></div>
+      <div class="rel-stat rs-c"><div class="n">${conf}</div><div class="l">✅ Conformes</div></div>
+      <div class="rel-stat rs-p"><div class="n">${parc}</div><div class="l">⚠️ Parciais</div></div>
+      <div class="rel-stat rs-n"><div class="n">${nc}</div><div class="l">❌ Não Conf.</div></div>
+    </div>
+    <div style="overflow-x:auto">
+    <table class="rel-table">
+      <thead><tr>
+        <th>Disciplina / Curso</th><th>Professor</th>
+        <th style="text-align:center">Conformidade</th>
+        <th style="text-align:center">Pendências obrig.</th>
+        <th style="text-align:center">Situação</th>
+      </tr></thead>
+      <tbody>${tRows}</tbody>
+    </table>
+    </div>
+    <div class="rel-note">
+      Conformidade média dos planos: <b>${mediaG}%</b> (itens obrigatórios) &nbsp;·&nbsp;
+      Itens obrigatórios derivam dos arts. 3.º, 5.º, 12.º e 21.º da CONSEPE 05/2025.
+    </div>
+  </div>`;
+
+  /* ── CARDS INDIVIDUAIS ── */
+  planos.forEach((p,idx)=>{
+    if(p.erro){
+      html+=`<div class="card"><div class="card-head" style="cursor:default">
+        <div class="pct-ring rn">!</div>
+        <div class="card-info"><div class="fn">📄 ${p.arquivo}</div>
+        <div class="mt" style="color:var(--red)">Erro ao ler arquivo: ${p.erro}</div></div>
+      </div></div>`;
+      return;
+    }
+    const grupos={};
+    p.itens.forEach(it=>(grupos[it.grupo]=grupos[it.grupo]||[]).push(it));
+    let itHtml='';
+    Object.entries(grupos).forEach(([g,its])=>{
+      itHtml+=`<div class="grupo-hd">${g}</div>`;
+      its.forEach(it=>{
+        let cls,ico,tag='';
+        if(it.ok){cls='ok';ico='✅';}
+        else if(it.obrigatorio){cls='er';ico='❌';tag='<span class="itag itag-o">Obrigatório</span>';}
+        else{cls='wn';ico='⚠️';tag='<span class="itag itag-r">Recomendado</span>';}
+        const ev=it.ok&&it.evidencia
+          ?`<div class="item-ev">${it.evidencia.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`:'';
+        itHtml+=`<div class="item ${cls}">
+          <span class="item-ico">${ico}</span>
+          <div class="item-c">
+            <div class="item-d ${cls}">[${it.codigo}] ${it.descricao}</div>
+            <div class="item-ref">${it.artigo}</div>${ev}
+          </div>${tag}</div>`;
+      });
+    });
+    const pends=p.itens.filter(i=>!i.ok&&i.obrigatorio);
+    const pendHtml=pends.length?`<div class="pend-box">
+      <div class="pt">❌ ${pends.length} pendência${pends.length>1?'s':''} obrigatória${pends.length>1?'s':''} — corrigir antes de entregar</div>
+      <ul>${pends.map(i=>`<li><b>[${i.codigo}]</b> ${i.descricao}<span>→ ${i.artigo}</span></li>`).join('')}</ul>
+    </div>`:'';
+    html+=`<div class="card${p.nivel!=='conforme'?' open':''}" id="card-${idx}">
+      <div class="card-head" onclick="tog(${idx})">
+        <div class="pct-ring ${RC[p.nivel]}">${p.pct_ob}%</div>
+        <div class="card-info">
+          <div class="fn">📄 ${p.arquivo}</div>
+          <div class="mt">${dv(p.meta.disciplina)} · ${dv(p.meta.curso)}</div>
+        </div>
+        <span class="nbadge ${NC[p.nivel]}">${NL[p.nivel]}</span>
+        <span class="chev">⌄</span>
+      </div>
+      <div class="card-body">
+        <div class="mgrid">
+          <div class="mi"><div class="mk">Disciplina</div><div class="mv">${dv(p.meta.disciplina)}</div></div>
+          <div class="mi"><div class="mk">Curso</div><div class="mv">${dv(p.meta.curso)}</div></div>
+          <div class="mi"><div class="mk">Período</div><div class="mv">${dv(p.meta.periodo)}</div></div>
+          <div class="mi"><div class="mk">Professor</div><div class="mv">${dv(p.meta.professor)}</div></div>
+        </div>
+        ${itHtml}${pendHtml}
+      </div>
+    </div>`;
+  });
+
+  el.innerHTML=html;
+  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+}
+
+function tog(idx){document.getElementById('card-'+idx).classList.toggle('open');}
+</script>
+</body>
+</html>
