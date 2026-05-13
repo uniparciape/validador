@@ -164,9 +164,20 @@ footer a:hover{color:var(--red)}
 </main>
 
 <footer>
-  UNIPAR Cianorte &nbsp;·&nbsp; Resolução CONSEPE n.º 05/2025 &nbsp;·&nbsp;
-  Funciona direto no navegador, sem instalação &nbsp;·&nbsp;
-  <a href="#" onclick="window.print();return false">🖨️ Imprimir relatório</a>
+  <div style="margin-bottom:8px">
+    UNIPAR Cianorte &nbsp;·&nbsp; Resolução CONSEPE n.º 05/2025 &nbsp;·&nbsp;
+    IN Diretoria de Educação – Elaboração do Plano de Ensino 2026 &nbsp;·&nbsp;
+    <a href="#" onclick="window.print();return false" style="color:inherit">🖨️ Imprimir relatório</a>
+  </div>
+  <div style="margin-bottom:10px;padding:8px 16px;background:#fff8f0;border:1px solid #f5d0a0;border-radius:6px;font-size:11px;color:#7a4a00;display:inline-block;text-align:left;max-width:700px">
+    ⚠️ <b>Nota sobre Prova Integrada:</b> A Resolução CONSEPE 05/2025 prevê peso fixo de 50% no bimestre.
+    A Instrução Normativa da Diretoria de Educação (dez/2025) adota pesos praticados de
+    <b>20 a 30%</b> (disciplinas semestrais) e <b>30 a 50%</b> (disciplinas anuais).
+    Este verificador aceita ambos os critérios no item 5.4.
+  </div>
+  <div style="margin-top:10px;font-size:10px;color:#b0b0b0;letter-spacing:.3px">
+    Desenvolvido por Prof. Bruno Oliveira
+  </div>
 </footer>
 
 <script>
@@ -275,8 +286,10 @@ const CHECKLIST=[
   ["5.3","AVALIAÇÃO DA APRENDIZAGEM","Composição / fórmula da média final",
    ["m[eé]dia\\s+final","m[eé]dia\\s*=","\\(N1\\s*\\+\\s*N2",
     "m[eé]dia\\s+aritm[eé]tica"],"Art. 5.º §1.º / §2.º / Art. 21.º",true],
-  ["5.4","AVALIAÇÃO DA APRENDIZAGEM","Prova Integrada (50% do bimestre N2 e/ou N4)",
-   ["prova\\s+integrada","50%.{0,30}bimest","bimest.{0,30}50%"],"Art. 5.º §1.º b / §2.º b",true],
+  ["5.4","AVALIAÇÃO DA APRENDIZAGEM","Prova Integrada mencionada no bimestre N2 e/ou N4",
+   ["prova\\s+integrada","\\bPI\\b","integrada.{0,30}bimest",
+    "[23][0-9]\\s*%.{0,20}bimest","bimest.{0,20}[23][0-9]\\s*%",
+    "50%.{0,30}bimest","bimest.{0,30}50%"],"Art. 5.º §1.º b / §2.º b · IN Diretoria Ed. 2026",true],
   ["5.5","AVALIAÇÃO DA APRENDIZAGEM","Escala de notas 0,0 a 10,0 sem arredondamento",
    ["0[,.]0.{0,15}(a|até).{0,8}10","sem\\s+arredondamento",
     "primeira\\s+casa\\s+decimal"],"Art. 5.º §6.º / Art. 21.º §3.º",true],
@@ -440,7 +453,10 @@ function render(planos){
     </div>
     <div class="rel-note">
       Conformidade média dos planos: <b>${mediaG}%</b> (itens obrigatórios) &nbsp;·&nbsp;
-      Itens obrigatórios derivam dos arts. 3.º, 5.º, 12.º e 21.º da CONSEPE 05/2025.
+      Itens obrigatórios derivam dos arts. 3.º, 5.º, 12.º e 21.º da CONSEPE 05/2025.<br>
+      <span style="color:var(--orange)">⚠️ <b>Atenção — Prova Integrada [5.4]:</b></span>
+      A CONSEPE 05/2025 prevê 50% fixo no bimestre. A IN Diretoria de Educação (dez/2025) adota
+      <b>20–30%</b> (semestral) e <b>30–50%</b> (anual). Este verificador aceita ambos os critérios.
     </div>
   </div>`;
 
