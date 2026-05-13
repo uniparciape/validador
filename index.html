@@ -130,7 +130,10 @@ footer a:hover{color:var(--red)}
     <strong>UNIPAR Cianorte</strong>
     <span>Verificador de Planos de Ensino</span>
   </div>
-  <div class="badge">CONSEPE n.º 05/2025</div>
+  <div class="badge" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+    <span>Resolução CONSEPE n.º 05/2025</span>
+    <span style="opacity:.7;font-size:10px">IN Elaboração do Plano de Ensino 2026</span>
+  </div>
 </header>
 
 <main>
@@ -164,15 +167,17 @@ footer a:hover{color:var(--red)}
 </main>
 
 <footer>
-  <div style="margin-bottom:8px">
-    UNIPAR Cianorte &nbsp;·&nbsp; Resolução CONSEPE n.º 05/2025 &nbsp;·&nbsp;
-    IN Diretoria de Educação – Elaboração do Plano de Ensino 2026 &nbsp;·&nbsp;
+  <div style="margin-bottom:6px">
+    UNIPAR Cianorte &nbsp;·&nbsp;
     <a href="#" onclick="window.print();return false" style="color:inherit">🖨️ Imprimir relatório</a>
   </div>
+  <div style="margin-bottom:8px;font-size:11px;color:var(--g500)">
+    Baseado em: <b>Resolução CONSEPE n.º 05/2025</b> (Regulamento dos Critérios de Avaliação da Aprendizagem – UNIPAR, 26/11/2025)
+    &nbsp;e&nbsp; <b>Instruções para Elaboração e Preenchimento do Plano de Ensino – 2026</b> (Diretoria de Educação – UNIPAR, dez/2025).
+  </div>
   <div style="margin-bottom:10px;padding:8px 16px;background:#fff8f0;border:1px solid #f5d0a0;border-radius:6px;font-size:11px;color:#7a4a00;display:inline-block;text-align:left;max-width:700px">
-    ⚠️ <b>Nota sobre Prova Integrada:</b> A Resolução CONSEPE 05/2025 prevê peso fixo de 50% no bimestre.
-    A Instrução Normativa da Diretoria de Educação (dez/2025) adota pesos praticados de
-    <b>20 a 30%</b> (disciplinas semestrais) e <b>30 a 50%</b> (disciplinas anuais).
+    ⚠️ <b>Nota — Prova Integrada:</b> A Resolução CONSEPE 05/2025 prevê peso fixo de 50% no bimestre.
+    A IN Diretoria de Educação 2026 adota pesos de <b>20 a 30%</b> (semestral) e <b>30 a 50%</b> (anual).
     Este verificador aceita ambos os critérios no item 5.4.
   </div>
   <div style="margin-top:10px;font-size:10px;color:#b0b0b0;letter-spacing:.3px">
@@ -433,7 +438,14 @@ function render(planos){
 
   let html=`<div class="relatorio">
     <h2>📋 Relatório Final Consolidado</h2>
-    <div class="sub">Gerado em ${now} &nbsp;·&nbsp; UNIPAR Cianorte &nbsp;·&nbsp; Resolução CONSEPE n.º 05/2025</div>
+    <div class="sub">
+      Gerado em ${now} &nbsp;·&nbsp; UNIPAR Cianorte<br>
+      <span style="font-size:11px">
+        Baseado em: <b>Resolução CONSEPE n.º 05/2025</b> (26/11/2025) &nbsp;e&nbsp;
+        <b>Instruções para Elaboração e Preenchimento do Plano de Ensino – 2026</b>
+        (Diretoria de Educação, dez/2025)
+      </span>
+    </div>
     <div class="rel-stats">
       <div class="rel-stat rs-t"><div class="n">${planos.length}</div><div class="l">Analisados</div></div>
       <div class="rel-stat rs-c"><div class="n">${conf}</div><div class="l">✅ Conformes</div></div>
@@ -452,10 +464,13 @@ function render(planos){
     </table>
     </div>
     <div class="rel-note">
-      Conformidade média dos planos: <b>${mediaG}%</b> (itens obrigatórios) &nbsp;·&nbsp;
-      Itens obrigatórios derivam dos arts. 3.º, 5.º, 12.º e 21.º da CONSEPE 05/2025.<br>
+      Conformidade média dos planos: <b>${mediaG}%</b> (itens obrigatórios).<br>
+      As indicações deste relatório são baseadas em:<br>
+      &nbsp;&nbsp;① <b>Resolução CONSEPE n.º 05/2025</b> – Regulamento dos Critérios de Avaliação da Aprendizagem dos Cursos de Graduação, UNIPAR (26/11/2025).<br>
+      &nbsp;&nbsp;② <b>Instruções para Elaboração e Preenchimento do Plano de Ensino – 2026</b> – Diretoria de Educação, UNIPAR (dez/2025).<br>
+      Os itens obrigatórios derivam principalmente dos arts. 3.º, 5.º, 12.º e 21.º da CONSEPE 05/2025 e das seções de Identificação, Critério de Avaliação, Metodologia e Bibliografia da IN 2026.<br>
       <span style="color:var(--orange)">⚠️ <b>Atenção — Prova Integrada [5.4]:</b></span>
-      A CONSEPE 05/2025 prevê 50% fixo no bimestre. A IN Diretoria de Educação (dez/2025) adota
+      A CONSEPE 05/2025 prevê peso fixo de 50% no bimestre. A IN 2026 adota
       <b>20–30%</b> (semestral) e <b>30–50%</b> (anual). Este verificador aceita ambos os critérios.
     </div>
   </div>`;
